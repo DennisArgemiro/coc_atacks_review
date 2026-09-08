@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoC Attack Analysis</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <h1>⚔️ CoC Attack Analysis</h1>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="submit" id="nav-submit">Submeter Ataque</button>
+        <button class="nav-btn" data-view="search" id="nav-search">Buscar Ataque</button>
+        <button class="nav-btn" data-view="analyzer" id="nav-analyzer" style="display:none;">Analisar</button>
+        <button class="nav-btn" data-view="admin" id="nav-admin" style="display:none;">Admin</button>
+      </nav>
+      <div class="auth-area">
+        <span id="user-email" class="user-email" style="display:none;"></span>
+        <button class="btn btn-login" id="login-btn" onclick="openLoginModal()">Login</button>
+        <button class="btn btn-logout" id="logout-btn" style="display:none;" onclick="logout()">Sair</button>
+      </div>
+    </header>
+
+    <!-- VIEW: Submissão de Ataque -->
+    <section id="view-submit" class="view active">
+      <div class="card">
+        <h2>Submeter Ataque</h2>
+        <form id="attack-form">
+          <div class="form-group">
+            <label for="player-name">Nome do Jogador</label>
+            <input type="text" id="player-name" required placeholder="Ex: Dennis">
+          </div>
+
+          <div class="form-group">
+            <label for="player-id">ID do Jogador</label>
+            <input type="text" id="player-id" required placeholder="Ex: #ABC123">
+          </div>
+
+          <div class="form-group">
+            <label for="clan">Clã</label>
+            <input type="text" id="clan" required placeholder="Nome do clã">
+          </div>
+
+          <div class="form-group">
+            <label for="attack-type">Tipo</label>
+            <select id="attack-type" required>
+              <option value="">Selecione...</option>
+              <option value="A Vulso">A Vulso</option>
+              <option value="Amistoso">Amistoso</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="friendly-type-group" style="display:none;">
+            <label for="friendly-type">Tipo de Amistoso</label>
+            <select id="friendly-type">
+              <option value="">Carregando...</option>
+            </select>
+          </div>
+
+          <!-- Opções de vídeo -->
+          <div class="video-source-toggle">
+            <button type="button" class="toggle-btn active" data-source="upload" onclick="switchVideoSource('upload')">Upload de Vídeo</button>
+            <button type="button" class="toggle-btn" data-source="url" onclick="switchVideoSource('url')">Colar URL</button>
+          </div>
+
+          <div id="video-upload-area" class="form-group">
+            <label>Vídeo do Ataque</label>
+            <div class="upload-zone" id="upload-zone">
+              <input type="file" id="video-file" accept="video/*" style="display:none;">
+              <p>Arraste um vídeo ou clique para selecionar</p>
+              <p class="upload-hint">MP4, WebM, MOV (máx. 50MB)</p>
+              <div id="upload-preview" style="display:none;"></div>
+            </div>
+            <div id="upload-progress" style="display:none;">
+              <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+              <span id="progress-text">0%</span>
+            </div>
+          </div>
+
+          <div id="video-url-area" class="form-group" style="display:none;">
+            <label for="video-url">URL do Vídeo</label>
+            <input type="url" id="video-url" placeholder="https://youtube.com/watch?v=...">
+            <small class="hint">YouTube, Streamable, ou link direto de vídeo</small>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submeter</button>
+        </form>
+        <div id="submit-message" class="message" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: Buscar Ataque -->
+    <section id="view-search" class="view">
+      <div class="card">
+        <h2>Buscar Ataque</h2>
+        <p class="search-desc">Cole o ID da submissão para acompanhar o status do seu ataque.</p>
+        <form id="search-form" class="search-form">
+          <div class="form-group">
+            <input type="text" id="search-attack-id" required placeholder="ID do ataque (máx. 9 caracteres)" maxlength="9">
+          </div>
+          <button type="submit" class="btn btn-primary">Buscar</button>
+        </form>
+        <div id="search-result" style="display:none;"></div>
+        <div id="search-message" class="message" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display:none;">
+      <div class="spinner"></div>
+      <p>Enviando ataque...</p>
+    </div>
+
+    <!-- Modal de Sucesso (pós-submissão) -->
+    <div id="success-modal" class="modal" style="display:none;">
+      <div class="modal-content modal-success">
+        <div class="success-icon">✓</div>
+        <h2>Ataque Submetido!</h2>
+        <p>Salve o ID abaixo para acompanhar sua submissão:</p>
+        <div class="copy-id-box">
+          <input type="text" id="submitted-id" readonly>
+          <button class="btn-copy" onclick="copyId()">Copiar</button>
+        </div>
+        <span id="copy-feedback" class="copy-feedback"></span>
+        <button class="btn btn-primary" onclick="closeSuccessModal()" style="margin-top:16px;">Fechar</button>
+      </div>
+    </div>
+
+    <!-- VIEW: Analisador -->
+    <section id="view-analyzer" class="view">
+      <div class="filters">
+        <h2>Ataques</h2>
+        <div class="filter-row">
+          <input type="text" id="search-id" placeholder="Pesquisar por ID..." class="search-input">
+          <select id="filter-status">
+            <option value="">Todos os Status</option>
+            <option value="Aguardando">Aguardando</option>
+            <option value="Em andamento">Em andamento</option>
+            <option value="Respondido">Respondido</option>
+          </select>
+          <select id="filter-type">
+            <option value="">Todos os Tipos</option>
+            <option value="A Vulso">A Vulso</option>
+            <option value="Amistoso">Amistoso</option>
+          </select>
+          <input type="date" id="filter-date">
+        </div>
+      </div>
+
+      <div id="attacks-list" class="attacks-list">
+        <p class="empty-state">Nenhum ataque encontrado.</p>
+      </div>
+
+      <!-- Modal de Avaliação -->
+      <div id="eval-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+          <button class="modal-close" id="close-modal">&times;</button>
+          <div id="eval-attack-info"></div>
+          <div id="eval-video-container"></div>
+          <form id="eval-form">
+            <div id="eval-criteria"></div>
+            <div class="form-group">
+              <label for="eval-feedback">Feedback do Avaliador</label>
+              <textarea id="eval-feedback" rows="8" placeholder="Descreva detalhadamente a análise do ataque...&#10;&#10;Pontos positivos:&#10;- ...&#10;&#10;Pontos para melhorar:&#10;- ...&#10;&#10;Sugestões:&#10;- ..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="evaluator-name">Seu Nome</label>
+              <input type="text" id="evaluator-name" placeholder="Nome do avaliador">
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar Avaliação</button>
+          </form>
+          <div id="eval-message" class="message" style="display:none;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: Admin -->
+    <section id="view-admin" class="view">
+      <div class="admin-grid">
+        <!-- Critérios -->
+        <div class="card">
+          <h2>Critérios de Avaliação</h2>
+          <div id="criteria-list"></div>
+          <div class="admin-add">
+            <input type="text" id="new-criteria-name" placeholder="nome_interno">
+            <input type="text" id="new-criteria-label" placeholder="Nome exibido">
+            <button class="btn btn-small" id="add-criteria-btn">Adicionar</button>
+          </div>
+        </div>
+
+        <!-- Tipos de Amistoso -->
+        <div class="card">
+          <h2>Tipos de Amistoso</h2>
+          <div id="friendly-types-list"></div>
+          <div class="admin-add">
+            <input type="text" id="new-friendly-type" placeholder="Nome do tipo">
+            <button class="btn btn-small" id="add-friendly-btn">Adicionar</button>
+          </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="card full-width">
+          <h2>Estatísticas</h2>
+          <div id="stats-container" class="stats-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal de Login -->
+    <div id="login-modal" class="modal" style="display:none;">
+      <div class="modal-content modal-login">
+        <button class="modal-close" onclick="closeLoginModal()">&times;</button>
+        <h2>Login</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">E-mail</label>
+            <input type="email" id="login-email" required placeholder="seunome@analista.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Senha</label>
+            <input type="password" id="login-password" required placeholder="••••••">
+          </div>
+          <button type="submit" class="btn btn-primary" id="login-submit-btn">Entrar</button>
+        </form>
+        <div id="login-message" class="message" style="display:none;"></div>
+        <div class="login-register">
+          <span>Não tem conta?</span>
+          <button type="button" class="btn-link" onclick="toggleRegister()">Criar conta</button>
+        </div>
+        <form id="register-form" style="display:none;">
+          <div class="form-group">
+            <label for="reg-email">E-mail</label>
+            <input type="email" id="reg-email" required placeholder="seunome@analista.com">
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Senha</label>
+            <input type="password" id="reg-password" required placeholder="Mínimo 6 caracteres">
+          </div>
+          <button type="submit" class="btn btn-primary" id="reg-submit-btn">Criar Conta</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>

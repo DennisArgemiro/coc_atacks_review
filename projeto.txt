@@ -1,0 +1,32 @@
+a ideia é que ele rode no github pages com o supabase pra banco de dados. entao só o html, css e javascript no projeto com a api do supabase.
+
+Formulário de submissão de ataque:
+- id do jogador
+- clã
+- tipo
+     - A Vulso
+     - Amistoso (puxar amistosos do banco)
+- vídeo
+
+O ataque:
+Ficará aguardando resposta de algum avaliador.
+Terá 3 estados:
+- Aguardando
+- Em andamento
+- Respondido
+
+
+Analisador:
+Lista de ataques
+- filtrada por dia, mas pode colocar por tipo
+- na hora da análise, é para aparecer na ordem:
+     - nome do player em destaque
+     - informações do player com menos destaque
+     - vídeo
+     - formulário de avaliação
+            - Estratégia 
+            - afunilamento
+            - improviso
+            - utilizaçao de feitiços
+            - habilidades dos Heróis
+            - (mais critérios poderão ser adicionados e removidos no painel de admin)
