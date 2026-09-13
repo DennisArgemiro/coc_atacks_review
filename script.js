@@ -313,11 +313,19 @@ async function validatePlayerForType() {
 
   if (!playerTag) return;
 
+  // Travar formulário durante busca
+  attackForm.querySelectorAll('input, select, button').forEach(el => el.disabled = true);
+  playerTagInput.style.borderColor = 'var(--accent)';
+
   const { data } = await db
     .from('players')
     .select('player_name, clan_name')
     .ilike('player_tag', playerTag)
     .single();
+
+  // Destravar formulário
+  attackForm.querySelectorAll('input, select, button').forEach(el => el.disabled = false);
+  playerTagInput.style.borderColor = '';
 
   const isPlayerRegistered = !!data;
 
