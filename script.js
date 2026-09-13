@@ -572,7 +572,9 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
                 </span>
               `).join('')}
             </div>
-            ${ev.feedback ? `<div class="eval-feedback-text">${ev.feedback}</div>` : ''}
+            ${ev.positives ? `<div class="eval-feedback-section"><strong>Pontos Positivos:</strong> ${ev.positives}</div>` : ''}
+            ${ev.negatives ? `<div class="eval-feedback-section"><strong>Pontos Negativos:</strong> ${ev.negatives}</div>` : ''}
+            ${ev.improvements ? `<div class="eval-feedback-section"><strong>Onde Melhorar:</strong> ${ev.improvements}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -747,7 +749,9 @@ async function openEvaluation(attackId) {
             </span>
           `).join('')}
         </div>
-        ${userEval.feedback ? `<div class="eval-feedback-text">${userEval.feedback}</div>` : ''}
+        ${userEval.positives ? `<div class="eval-feedback-section"><strong>Pontos Positivos:</strong> ${userEval.positives}</div>` : ''}
+        ${userEval.negatives ? `<div class="eval-feedback-section"><strong>Pontos Negativos:</strong> ${userEval.negatives}</div>` : ''}
+        ${userEval.improvements ? `<div class="eval-feedback-section"><strong>Onde Melhorar:</strong> ${userEval.improvements}</div>` : ''}
       </div>
     `;
 
@@ -824,7 +828,9 @@ evalForm.addEventListener('submit', async (e) => {
   const evaluation = {
     attack_id: attackId,
     evaluator_name: document.getElementById('evaluator-name').value.trim() || currentUser?.email || 'Anônimo',
-    feedback: document.getElementById('eval-feedback').value.trim()
+    positives: document.getElementById('eval-positives').value.trim(),
+    negatives: document.getElementById('eval-negatives').value.trim(),
+    improvements: document.getElementById('eval-improvements').value.trim()
   };
 
   allCriteria.forEach(c => {
@@ -940,6 +946,53 @@ async function deleteFriendlyType(id) {
   await db.from('friendly_types').delete().eq('id', id);
   loadFriendlyTypesAdmin();
 }
+
+// ============================================
+// ADMIN: CADASTRO DE ANALISTAS
+// ============================================
+document.getElementById('add-analyst-btn').addEventListener('click', async () => {
+  const name = document.getElementById('analyst-name').value.trim();
+  const email = document.getElementById('analyst-email').value.trim();
+  const password = document.getElementById('analyst-password').value;
+  const msgEl = document.getElementById('analyst-message');
+
+  if (!name || !email || !password) {
+    showMessage(msgEl, 'Preencha todos os campos.', 'error');
+    return;
+  }
+
+  if (!email.endsWith('@analista.com')) {
+    showMessage(msgEl, 'O email deve terminar com @analista.com', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showMessage(msgEl, 'A senha deve ter no mínimo 6 caracteres.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('add-analyst-btn');
+  btn.disabled = true;
+  btn.textContent = 'Cadastrando...';
+
+  const { data, error } = await db.auth.signUp({
+    email,
+    password,
+    options: { data: { name, role: 'analyst' } }
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Cadastrar';
+
+  if (error) {
+    showMessage(msgEl, 'Erro: ' + error.message, 'error');
+  } else {
+    showMessage(msgEl, `✓ ${name} cadastrado com sucesso!`, 'success');
+    document.getElementById('analyst-name').value = '';
+    document.getElementById('analyst-email').value = '';
+    document.getElementById('analyst-password').value = '';
+  }
+});
 
 async function loadStats() {
   const [total, pending, inProgress, responded, evals] = await Promise.all([

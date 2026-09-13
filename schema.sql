@@ -23,12 +23,14 @@ CREATE TABLE IF NOT EXISTS evaluations (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   attack_id UUID NOT NULL REFERENCES attacks(id) ON DELETE CASCADE,
   evaluator_name TEXT,
-  strategy INTEGER CHECK (strategy >= 1 AND strategy <= 5),
-  funneling INTEGER CHECK (funneling >= 1 AND funneling <= 5),
-  improvisation INTEGER CHECK (improvisation >= 1 AND improvisation <= 5),
-  spell_usage INTEGER CHECK (spell_usage >= 1 AND spell_usage <= 5),
-  hero_skills INTEGER CHECK (hero_skills >= 1 AND hero_skills <= 5),
-  feedback TEXT,
+  strategy NUMERIC CHECK (strategy >= 1 AND strategy <= 10),
+  funneling NUMERIC CHECK (funneling >= 1 AND funneling <= 10),
+  improvisation NUMERIC CHECK (improvisation >= 1 AND improvisation <= 10),
+  spell_usage NUMERIC CHECK (spell_usage >= 1 AND spell_usage <= 10),
+  hero_skills NUMERIC CHECK (hero_skills >= 1 AND hero_skills <= 10),
+  positives TEXT,
+  negatives TEXT,
+  improvements TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

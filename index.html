@@ -162,8 +162,16 @@
           <form id="eval-form">
             <div id="eval-criteria"></div>
             <div class="form-group">
-              <label for="eval-feedback">Feedback do Avaliador</label>
-              <textarea id="eval-feedback" rows="8" placeholder="Descreva detalhadamente a análise do ataque...&#10;&#10;Pontos positivos:&#10;- ...&#10;&#10;Pontos para melhorar:&#10;- ...&#10;&#10;Sugestões:&#10;- ..."></textarea>
+              <label for="eval-positives">Pontos Positivos</label>
+              <textarea id="eval-positives" rows="4" placeholder="O que o jogador fez bem..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="eval-negatives">Pontos Negativos</label>
+              <textarea id="eval-negatives" rows="4" placeholder="O que pode ser melhorado..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="eval-improvements">Onde Melhorar</label>
+              <textarea id="eval-improvements" rows="4" placeholder="Sugestões específicas de melhoria..."></textarea>
             </div>
             <div class="form-group">
               <label for="evaluator-name">Seu Nome</label>
@@ -198,6 +206,19 @@
             <input type="text" id="new-friendly-type" placeholder="Nome do tipo">
             <button class="btn btn-small" id="add-friendly-btn">Adicionar</button>
           </div>
+        </div>
+
+        <!-- Cadastro de Analistas -->
+        <div class="card full-width">
+          <h2>Cadastro de Analistas</h2>
+          <p class="admin-hint">Analistas podem avaliar ataques. O email deve terminar com @analista.com.</p>
+          <div class="admin-add">
+            <input type="text" id="analyst-name" placeholder="Nome do analista">
+            <input type="email" id="analyst-email" placeholder="email@analista.com">
+            <input type="password" id="analyst-password" placeholder="Senha (mín. 6 caracteres)">
+            <button class="btn btn-small" id="add-analyst-btn">Cadastrar</button>
+          </div>
+          <div id="analyst-message" class="message" style="display:none;"></div>
         </div>
 
         <!-- Jogadores (CSV) -->

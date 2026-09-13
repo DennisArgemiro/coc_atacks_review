@@ -512,6 +512,17 @@ body {
   color: var(--text);
 }
 .eval-star-item .stars { color: var(--accent); letter-spacing: 1px; }
+.eval-feedback-section {
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--bg-input);
+  padding: 10px 12px;
+  border-radius: 6px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  border-left: 3px solid var(--accent);
+  margin-bottom: 8px;
+}
 .eval-feedback-text {
   font-size: 0.85rem;
   color: var(--text);
