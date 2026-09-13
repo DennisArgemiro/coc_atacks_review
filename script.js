@@ -977,11 +977,14 @@ function parseCSV(text) {
     const cols = lines[i].split(';');
     if (cols.length < 6) continue;
 
+    // Limpar # do tag antes de salvar
+    const tag = cols[4]?.trim().replace(/[^a-zA-Z0-9]/g, '') || '';
+
     players.push({
       clan_number: parseInt(cols[1]) || 0,
       clan_name: cols[2]?.trim() || '',
       player_name: cols[3]?.trim() || '',
-      player_tag: cols[4]?.trim() || '',
+      player_tag: tag,
       town_hall: parseInt(cols[5]) || 0,
       role: cols[6]?.trim() || ''
     });
@@ -997,8 +1000,10 @@ document.getElementById('process-csv-btn').addEventListener('click', async () =>
   }
 
   const btn = document.getElementById('process-csv-btn');
+  const playersList = document.getElementById('players-list');
   btn.disabled = true;
   btn.textContent = 'Processando...';
+  playersList.innerHTML = '<div class="loading-players"><span class="spinner-btn"></span> Importando jogadores...</div>';
 
   let inserted = 0;
   let skipped = 0;
