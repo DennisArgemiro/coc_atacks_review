@@ -592,6 +592,16 @@ body {
   /* Upload */
   .upload-zone { padding: 20px 16px; }
   .upload-zone p { font-size: 0.85rem; }
+
+  /* Players List */
+  .player-item { grid-template-columns: 1fr; gap: 4px; padding: 8px 0; }
+  .player-tag { font-size: 0.7rem; }
+  .player-clan, .player-th, .player-role { font-size: 0.7rem; }
+
+  /* Eval Modal */
+  .eval-criteria-card { padding: 16px; }
+  .number-rating { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .number-rating input[type="number"] { width: 100%; }
 }
 
 /* Responsive - Tablet */
