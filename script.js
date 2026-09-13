@@ -306,7 +306,6 @@ attackTypeSelect.addEventListener('change', () => {
 async function validatePlayerForType() {
   const playerTag = cleanPlayerTag(document.getElementById('player-id').value);
   const attackType = attackTypeSelect.value;
-  const submitBtn = document.getElementById('submit-btn');
   const playerTagInput = document.getElementById('player-id');
 
   if (!playerTag) return;
@@ -325,14 +324,11 @@ async function validatePlayerForType() {
     showMessage(submitMessage, `✓ ${data.player_name} (${data.clan_name}) - Jogador no elenco`, 'success');
   } else {
     playerTagInput.style.borderColor = 'var(--error)';
-    showMessage(submitMessage, '✗ Jogador não encontrado no elenco. Só é permitido replays "A Vulso".', 'error');
-  }
-
-  // Se já tem tipo selecionado, validar
-  if (attackType && attackType !== 'A Vulso' && !isPlayerRegistered) {
-    attackTypeSelect.value = '';
-    submitBtn.disabled = true;
-    setTimeout(() => { submitBtn.disabled = false; }, 3000);
+    showMessage(submitMessage, '✗ Jogador não encontrado. Só é permitido replays "A Vulso".', 'error');
+    // Forçar tipo para "A Vulso" se jogador não está no elenco
+    if (attackType !== 'A Vulso') {
+      attackTypeSelect.value = 'A Vulso';
+    }
   }
 }
 
