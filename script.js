@@ -307,24 +307,32 @@ async function validatePlayerForType() {
   const playerTag = cleanPlayerTag(document.getElementById('player-id').value);
   const attackType = attackTypeSelect.value;
   const submitBtn = document.getElementById('submit-btn');
+  const playerTagInput = document.getElementById('player-id');
 
-  if (!playerTag || !attackType) return;
+  if (!playerTag) return;
 
   const { data } = await db
     .from('players')
-    .select('id')
+    .select('player_name, clan_name')
     .ilike('player_tag', playerTag)
     .single();
 
   const isPlayerRegistered = !!data;
 
-  if (attackType !== 'A Vulso' && !isPlayerRegistered) {
-    showMessage(submitMessage, 'Jogador não está no elenco. Só é permitido replays "A Vulso".', 'error');
+  // Feedback visual no campo
+  if (isPlayerRegistered) {
+    playerTagInput.style.borderColor = 'var(--success)';
+    showMessage(submitMessage, `✓ ${data.player_name} (${data.clan_name}) - Jogador no elenco`, 'success');
+  } else {
+    playerTagInput.style.borderColor = 'var(--error)';
+    showMessage(submitMessage, '✗ Jogador não encontrado no elenco. Só é permitido replays "A Vulso".', 'error');
+  }
+
+  // Se já tem tipo selecionado, validar
+  if (attackType && attackType !== 'A Vulso' && !isPlayerRegistered) {
     attackTypeSelect.value = '';
     submitBtn.disabled = true;
     setTimeout(() => { submitBtn.disabled = false; }, 3000);
-  } else {
-    submitMessage.style.display = 'none';
   }
 }
 
