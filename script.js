@@ -827,7 +827,7 @@ evalForm.addEventListener('submit', async (e) => {
 
   const evaluation = {
     attack_id: attackId,
-    evaluator_name: document.getElementById('evaluator-name').value.trim() || currentUser?.email || 'Anônimo',
+    evaluator_name: currentUser?.user_metadata?.name || currentUser?.email || 'Anônimo',
     positives: document.getElementById('eval-positives').value.trim(),
     negatives: document.getElementById('eval-negatives').value.trim(),
     improvements: document.getElementById('eval-improvements').value.trim()
