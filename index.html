@@ -201,6 +201,24 @@
           </div>
         </div>
 
+        <!-- Jogadores (CSV) -->
+        <div class="card full-width">
+          <h2>Elenco de Jogadores</h2>
+          <p class="admin-hint">Jogadores cadastrados podem submeter todos os tipos de replay. Jogadores fora da lista só podem submeter replays "A Vulso".</p>
+          <div class="csv-upload-area">
+            <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+            <button class="btn btn-small" onclick="document.getElementById('csv-file-input').click()">Importar CSV</button>
+            <span id="csv-file-name" class="csv-file-name"></span>
+            <button class="btn btn-small" id="process-csv-btn" style="display:none;">Processar</button>
+          </div>
+          <div id="csv-message" class="message" style="display:none;"></div>
+          <div class="players-stats">
+            <span id="players-count">0 jogadores cadastrados</span>
+            <button class="btn-link" onclick="clearPlayers()">Limpar lista</button>
+          </div>
+          <div id="players-list" class="players-list"></div>
+        </div>
+
         <!-- Estatísticas -->
         <div class="card full-width">
           <h2>Estatísticas</h2>

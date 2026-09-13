@@ -300,7 +300,39 @@ attackTypeSelect.addEventListener('change', () => {
   } else {
     friendlyTypeGroup.style.display = 'none';
   }
+
+  // Validar se jogador está na lista ao selecionar tipo
+  validatePlayerForType();
 });
+
+// Verificar se jogador está na lista de elenco
+async function validatePlayerForType() {
+  const playerTag = document.getElementById('player-id').value.trim();
+  const attackType = attackTypeSelect.value;
+  const submitBtn = document.getElementById('submit-btn');
+
+  if (!playerTag || !attackType) return;
+
+  const { data } = await db
+    .from('players')
+    .select('id')
+    .ilike('player_tag', playerTag)
+    .single();
+
+  const isPlayerRegistered = !!data;
+
+  if (attackType === 'Amistoso' && !isPlayerRegistered) {
+    showMessage(submitMessage, 'Jogador não está no elenco. Só é permitido replays "A Vulso".', 'error');
+    attackTypeSelect.value = '';
+    submitBtn.disabled = true;
+    setTimeout(() => { submitBtn.disabled = false; }, 3000);
+  } else {
+    submitMessage.style.display = 'none';
+  }
+}
+
+// Checar jogador ao digitar o ID
+document.getElementById('player-id').addEventListener('blur', validatePlayerForType);
 
 async function loadFriendlyTypes() {
   const { data, error } = await db
@@ -339,6 +371,23 @@ attackForm.addEventListener('submit', async (e) => {
   if (!videoUrl) {
     showMessage(submitMessage, 'Selecione ou envie um vídeo.', 'error');
     return;
+  }
+
+  // Validar jogador no elenco para tipo de ataque
+  const playerTag = document.getElementById('player-id').value.trim();
+  const attackType = attackTypeSelect.value;
+
+  if (attackType && attackType !== 'A Vulso') {
+    const { data: playerExists } = await db
+      .from('players')
+      .select('id')
+      .ilike('player_tag', playerTag)
+      .single();
+
+    if (!playerExists) {
+      showMessage(submitMessage, 'Jogador não está no elenco. Só é permitido replays "A Vulso".', 'error');
+      return;
+    }
   }
 
   const attack = {
@@ -473,7 +522,7 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
             <div class="eval-stars">
               ${criteria.map(c => `
                 <span class="eval-star-item">
-                  ${c.label} <span class="stars">${'★'.repeat(c.value)}${'☆'.repeat(5 - c.value)}</span>
+                  ${c.label} <span class="number-score">${c.value}/10</span>
                 </span>
               `).join('')}
             </div>
@@ -648,7 +697,7 @@ async function openEvaluation(attackId) {
         <div class="eval-stars-read">
           ${evalCriteria.map(c => `
             <span class="eval-star-item">
-              ${c.label} <span class="stars">${'★'.repeat(c.value)}${'☆'.repeat(5 - c.value)}</span>
+              ${c.label} <span class="number-score">${c.value}/10</span>
             </span>
           `).join('')}
         </div>
@@ -663,11 +712,9 @@ async function openEvaluation(attackId) {
     criteriaContainer.innerHTML = allCriteria.map(c => `
       <div class="criteria-item">
         <div class="criteria-label">${c.label}</div>
-        <div class="star-rating">
-          ${[5, 4, 3, 2, 1].map(n => `
-            <input type="radio" name="${c.name}" id="${c.name}-${n}" value="${n}">
-            <label for="${c.name}-${n}">★</label>
-          `).join('')}
+        <div class="number-rating">
+          <input type="number" name="${c.name}" id="${c.name}" min="1" max="10" step="0.1" placeholder="1-10">
+          <span class="rating-hint">/ 10</span>
         </div>
       </div>
     `).join('');
@@ -735,8 +782,8 @@ evalForm.addEventListener('submit', async (e) => {
   };
 
   allCriteria.forEach(c => {
-    const selected = document.querySelector(`input[name="${c.name}"]:checked`);
-    evaluation[c.name] = selected ? parseInt(selected.value) : null;
+    const input = document.querySelector(`input[name="${c.name}"]`);
+    evaluation[c.name] = input && input.value ? parseFloat(input.value) : null;
   });
 
   const { error } = await db.from('evaluations').insert([evaluation]);
@@ -765,7 +812,9 @@ async function loadAdmin() {
   await Promise.all([
     loadCriteriaAdmin(),
     loadFriendlyTypesAdmin(),
-    loadStats()
+    loadStats(),
+    loadPlayersCount(),
+    loadPlayersList()
   ]);
 }
 
@@ -877,6 +926,113 @@ async function loadStats() {
       <div class="stat-label">Avaliações</div>
     </div>
   `;
+}
+
+// ============================================
+// ADMIN: JOGADORES (CSV)
+// ============================================
+let csvData = null;
+
+document.getElementById('csv-file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  document.getElementById('csv-file-name').textContent = file.name;
+  document.getElementById('process-csv-btn').style.display = 'inline-block';
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    csvData = parseCSV(event.target.result);
+  };
+  reader.readAsText(file);
+});
+
+function parseCSV(text) {
+  const lines = text.split('\n').filter(l => l.trim());
+  const header = lines[0].split(';');
+  const players = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(';');
+    if (cols.length < 6) continue;
+
+    players.push({
+      clan_number: parseInt(cols[1]) || 0,
+      clan_name: cols[2]?.trim() || '',
+      player_name: cols[3]?.trim() || '',
+      player_tag: cols[4]?.trim() || '',
+      town_hall: parseInt(cols[5]) || 0,
+      role: cols[6]?.trim() || ''
+    });
+  }
+
+  return players;
+}
+
+document.getElementById('process-csv-btn').addEventListener('click', async () => {
+  if (!csvData || csvData.length === 0) {
+    showMessage(document.getElementById('csv-message'), 'Nenhum dado válido no CSV.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('process-csv-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processando...';
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const player of csvData) {
+    const { error } = await db.from('players').upsert(player, { onConflict: 'player_tag', ignoreDuplicates: false });
+    if (error) {
+      skipped++;
+    } else {
+      inserted++;
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Processar';
+  csvData = null;
+  document.getElementById('csv-file-input').value = '';
+  document.getElementById('csv-file-name').textContent = '';
+  btn.style.display = 'none';
+
+  showMessage(document.getElementById('csv-message'), `${inserted} jogadores importados. ${skipped} erros.`, 'success');
+  loadPlayersCount();
+  loadPlayersList();
+});
+
+async function loadPlayersCount() {
+  const { count } = await db.from('players').select('*', { count: 'exact', head: true });
+  document.getElementById('players-count').textContent = `${count || 0} jogadores cadastrados`;
+}
+
+async function loadPlayersList() {
+  const { data } = await db.from('players').select('*').order('clan_name').order('player_name').limit(50);
+  const container = document.getElementById('players-list');
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<p class="empty-state">Nenhum jogador cadastrado.</p>';
+    return;
+  }
+
+  container.innerHTML = data.map(p => `
+    <div class="player-item">
+      <span class="player-name">${p.player_name}</span>
+      <span class="player-tag">${p.player_tag}</span>
+      <span class="player-clan">${p.clan_name}</span>
+      <span class="player-th">TH${p.town_hall}</span>
+      <span class="player-role">${p.role}</span>
+    </div>
+  `).join('');
+}
+
+async function clearPlayers() {
+  if (!confirm('Remover todos os jogadores do elenco?')) return;
+  await db.from('players').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  loadPlayersCount();
+  loadPlayersList();
 }
 
 // ============================================

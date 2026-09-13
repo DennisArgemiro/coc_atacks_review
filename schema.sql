@@ -68,6 +68,21 @@ INSERT INTO friendly_types (name) VALUES
   ('Evento')
 ON CONFLICT (name) DO NOTHING;
 
+-- Tabela de jogadores (cadastrados via CSV)
+CREATE TABLE IF NOT EXISTS players (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  clan_number INTEGER NOT NULL,
+  clan_name TEXT NOT NULL,
+  player_name TEXT NOT NULL,
+  player_tag TEXT NOT NULL UNIQUE,
+  town_hall INTEGER,
+  role TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_players_tag ON players(player_tag);
+CREATE INDEX IF NOT EXISTS idx_players_name ON players(player_name);
+
 -- ============================================
 -- FUNÇÕES AUXILIARES (antes das RLS)
 -- ============================================
@@ -125,6 +140,21 @@ ALTER TABLE attacks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE criteria ENABLE ROW LEVEL SECURITY;
 ALTER TABLE friendly_types ENABLE ROW LEVEL SECURITY;
+ALTER TABLE players ENABLE ROW LEVEL SECURITY;
+
+-- ============================================
+-- POLÍTICAS: players
+-- ============================================
+
+-- Leitura pública (para verificar se jogador existe)
+DROP POLICY IF EXISTS "players_select_public" ON players;
+CREATE POLICY "players_select_public" ON players
+  FOR SELECT USING (true);
+
+-- Apenas admin pode gerenciar jogadores
+DROP POLICY IF EXISTS "players_all_admin" ON players;
+CREATE POLICY "players_all_admin" ON players
+  FOR ALL USING (is_admin());
 
 -- ============================================
 -- POLÍTICAS: attacks

@@ -273,13 +273,6 @@ body {
 /* Star Rating */
 .criteria-item { margin-bottom: 16px; }
 .criteria-label { font-size: 0.9rem; margin-bottom: 6px; }
-.star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
-.star-rating input[type="radio"] { display: none; }
-.star-rating label { cursor: pointer; font-size: 1.5rem; color: var(--border); transition: color 0.2s; }
-.star-rating input[type="radio"]:checked + label,
-.star-rating input[type="radio"]:checked + label ~ label,
-.star-rating label:hover,
-.star-rating label:hover ~ label { color: var(--accent); }
 
 /* Admin */
 .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -592,4 +585,113 @@ body {
 /* Safe area for notched phones */
 @supports (padding: env(safe-area-inset-bottom)) {
   .modal-content { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+/* ============================================
+   NUMBER RATING (1-10)
+   ============================================ */
+.number-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.number-rating input[type="number"] {
+  width: 70px;
+  padding: 6px 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 1rem;
+  text-align: center;
+}
+.number-rating input[type="number"]:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+.rating-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.number-score {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+/* ============================================
+   ADMIN: PLAYERS / CSV
+   ============================================ */
+.admin-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+.csv-upload-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.csv-file-name {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.players-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.players-stats span {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--error);
+  cursor: pointer;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+.players-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+.player-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.player-name {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.player-tag {
+  color: var(--accent);
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+.player-clan {
+  color: var(--text-muted);
+}
+.player-th {
+  background: var(--bg-input);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.player-role {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
