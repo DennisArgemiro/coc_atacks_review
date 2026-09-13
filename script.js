@@ -307,6 +307,8 @@ async function validatePlayerForType() {
   const playerTag = cleanPlayerTag(document.getElementById('player-id').value);
   const attackType = attackTypeSelect.value;
   const playerTagInput = document.getElementById('player-id');
+  const playerNameInput = document.getElementById('player-name');
+  const clanInput = document.getElementById('clan');
   const optAmistoso = document.getElementById('opt-amistoso');
 
   if (!playerTag) return;
@@ -323,6 +325,9 @@ async function validatePlayerForType() {
   if (isPlayerRegistered) {
     playerTagInput.style.borderColor = 'var(--success)';
     showMessage(submitMessage, `✓ ${data.player_name} (${data.clan_name}) - Jogador no elenco`, 'success');
+    // Preencher nome e clã automaticamente
+    playerNameInput.value = data.player_name;
+    clanInput.value = data.clan_name;
     // Adicionar opção Amistoso se não existe
     if (!optAmistoso) {
       const opt = document.createElement('option');
@@ -334,6 +339,9 @@ async function validatePlayerForType() {
   } else {
     playerTagInput.style.borderColor = 'var(--error)';
     showMessage(submitMessage, '✗ Jogador não encontrado. Só é permitido replays "A Vulso".', 'error');
+    // Limpar nome e clã
+    playerNameInput.value = '';
+    clanInput.value = '';
     // Remover opção Amistoso se existe
     if (optAmistoso) {
       attackTypeSelect.removeChild(optAmistoso);
