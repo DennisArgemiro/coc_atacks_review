@@ -300,14 +300,11 @@ attackTypeSelect.addEventListener('change', () => {
   } else {
     friendlyTypeGroup.style.display = 'none';
   }
-
-  // Validar se jogador está na lista ao selecionar tipo
-  validatePlayerForType();
 });
 
 // Verificar se jogador está na lista de elenco
 async function validatePlayerForType() {
-  const playerTag = document.getElementById('player-id').value.trim();
+  const playerTag = cleanPlayerTag(document.getElementById('player-id').value);
   const attackType = attackTypeSelect.value;
   const submitBtn = document.getElementById('submit-btn');
 
@@ -321,7 +318,7 @@ async function validatePlayerForType() {
 
   const isPlayerRegistered = !!data;
 
-  if (attackType === 'Amistoso' && !isPlayerRegistered) {
+  if (attackType !== 'A Vulso' && !isPlayerRegistered) {
     showMessage(submitMessage, 'Jogador não está no elenco. Só é permitido replays "A Vulso".', 'error');
     attackTypeSelect.value = '';
     submitBtn.disabled = true;
@@ -331,7 +328,21 @@ async function validatePlayerForType() {
   }
 }
 
-// Checar jogador ao digitar o ID
+// Limpar tag do jogador (remover #, espaços, etc)
+function cleanPlayerTag(value) {
+  return value.replace(/[^a-zA-Z0-9]/g, '').trim();
+}
+
+// Ao digitar o ID, limpar automaticamente
+document.getElementById('player-id').addEventListener('input', (e) => {
+  const pos = e.target.selectionStart;
+  const cleaned = cleanPlayerTag(e.target.value);
+  e.target.value = cleaned;
+  e.target.setSelectionRange(pos, pos);
+});
+
+// Checar jogador ao selecionar tipo ou sair do campo ID
+attackTypeSelect.addEventListener('change', validatePlayerForType);
 document.getElementById('player-id').addEventListener('blur', validatePlayerForType);
 
 async function loadFriendlyTypes() {
@@ -374,7 +385,7 @@ attackForm.addEventListener('submit', async (e) => {
   }
 
   // Validar jogador no elenco para tipo de ataque
-  const playerTag = document.getElementById('player-id').value.trim();
+  const playerTag = cleanPlayerTag(document.getElementById('player-id').value);
   const attackType = attackTypeSelect.value;
 
   if (attackType && attackType !== 'A Vulso') {
@@ -393,7 +404,7 @@ attackForm.addEventListener('submit', async (e) => {
   const attack = {
     short_id: generateShortId(),
     player_name: document.getElementById('player-name').value.trim(),
-    player_id: document.getElementById('player-id').value.trim(),
+    player_id: playerTag,
     clan: document.getElementById('clan').value.trim(),
     attack_type: attackTypeSelect.value,
     video_url: videoUrl,
@@ -404,12 +415,14 @@ attackForm.addEventListener('submit', async (e) => {
   // Mostrar loading
   document.getElementById('loading-overlay').style.display = 'flex';
   document.getElementById('submit-btn').disabled = true;
+  document.getElementById('submit-btn').innerHTML = '<span class="spinner-btn"></span> Submetendo...';
 
   const { data, error } = await db.from('attacks').insert([attack]).select();
 
   // Esconder loading
   document.getElementById('loading-overlay').style.display = 'none';
   document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').innerHTML = 'Submeter';
 
   if (error) {
     showMessage(submitMessage, 'Erro ao submeter: ' + error.message, 'error');
